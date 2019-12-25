@@ -2,13 +2,13 @@
 namespace app\index\controller;
 
 
-use app\index\model\NcUser;
+use app\index\model\NvUser;
 use app\model\WxUser;
 use think\Controller;
-use think\facade\Config;
-use think\facade\View;
+use think\facade\Log;
 
-class Index  extends Controller
+
+class Index  extends CheckLogin
 {
     /**
      * 首页
@@ -33,10 +33,10 @@ class Index  extends Controller
 
     public function sayHi2()
     {
-        dump(NcUser::get(3));
+        dump(NvUser::get(3));
 
         //查询构造器
-        NcUser::field('id, name, email')
+        NvUser::field('id, name, email')
             ->where('id', 9)
             ->find();
     }
@@ -54,5 +54,22 @@ class Index  extends Controller
         //在模板中输出数据， 默认目录
 
 
+    }
+
+    /**
+     * 文件下载
+     *
+     * @author slm
+     * @return \think\response\Download
+     */
+    public function download()
+    {
+        $zip = new \ZipArchive();
+
+        $download =  new \think\response\Download('111.txt');
+//        return $download->name('my.jpg');
+        // 或者使用助手函数完成相同的功能
+        // download是系统封装的一个助手函数
+        return download('111.txt', '111.txt');
     }
 }

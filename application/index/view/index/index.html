@@ -220,10 +220,13 @@
                 <div class="toolbar-btn-action">
                   <div class="container-fluid">
                     <div class="col-xs-3">
+                      <form id="from_download">
                         <div class="col-xs-6">
-                          <input class="form-control" type="email" id="example-nf-email" name="example-nf-email" placeholder="输入二维码个数..">
+                          <input class="form-control" type="email" id="qr_numbers" name="qr_numbers" placeholder="输入二维码个数..">
                         </div>
-                        <a class="btn btn-warning m-r-5" href="/index/index/download"><i class="mdi mdi-download"></i> 二维码下载</a>
+                        <a class="btn btn-warning m-r-5" id="qr_download" ><i class="mdi mdi-download"></i> 二维码下载</a>
+                      </form>
+
 
                     </div>
                     <div class="col-xs-4">
@@ -234,7 +237,7 @@
                       </div>
                     </div>
                     <div class="col-xs-2">
-                      <a class="btn btn-primary m-r-5" href="#!"><i class="mdi mdi-search-web"></i> 查询数据</a>
+                      <a class="btn btn-primary m-r-5" id="example-search"><i class="mdi mdi-search-web"></i> 查询数据</a>
                       <a class="btn btn-success m-r-5" href="#!"><i class="mdi mdi-export"></i> 导出数据</a>
                     </div>
                   </div>
@@ -333,6 +336,12 @@
 <!--日期选择插件-->
 <script src="/static/js/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
 <script src="/static/js/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js"></script>
+<!--消息提示-->
+<script src="/static/js/bootstrap-notify.min.js"></script>
+<script type="text/javascript" src="/static/js/lightyear.js"></script>
+<script type="text/javascript" src="/static/js/main.min.js"></script>
+
+
 
 <script type="text/javascript">
 $(function(){
@@ -342,6 +351,69 @@ $(function(){
         $('#search-btn').html($(this).text() + ' <span class="caret"></span>');
     });
 });
+
+//搜索
+$('#qr_download').on('click', function(){
+
+  //获取参数
+  var num = $("#qr_numbers").val();
+  if (num == '' || typeof(num) == 'undefined') {
+    lightyear.notify('请输入二维码的数量', 'danger', 100);
+    return;
+  }
+
+  $('#from_download').attr('action', '/index/index/downloadQr');
+  $('#from_download').submit();
+
+  $("#qr_numbers").val('');
+
+});
+
+
+
+
+//搜索
+$('#example-search').on('click', function(){
+
+  //获取参数
+  var startTime = $("#example-daterange1").data("datetimepicker");
+  var endTime = $("#example-daterange2").data("datetimepicker");
+  if (startTime == '' || typeof(startTime) == 'undefined') {
+    lightyear.notify('请输入开始时间或者结束时间', 'danger', 100);
+    return;
+  }
+  if (endTime == '' || typeof(endTime) == 'undefined') {
+    lightyear.notify('请输入开始时间或者结束时间', 'danger', 100);
+    return;
+  }
+  lightyear.loading('show');
+  console.log("username="+startTime + ", password=" + endTime);
+  // 假设ajax提交操作
+  // setTimeout(function() {
+  //   lightyear.loading('hide');
+  //   lightyear.notify('服务器错误，请稍后再试~', 'danger', 100);
+  // }, 1e3)
+  $.ajax({
+    url: '/index/index/search',
+    type: 'POST',
+    data: {
+      "startTime": startTime,
+      "password": endTime
+    },
+    success: function (result) {
+      lightyear.loading('hide');
+    },
+    error: function (e) {
+      lightyear.loading('hide');
+      console.log(e)
+      lightyear.notify(e, 'danger', 100);
+    }
+  })
+});
+
+
+
+
 </script>
 </body>
 </html>

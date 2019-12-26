@@ -5,6 +5,7 @@ namespace app\index\controller;
 
 use app\index\model\NvUser;
 use app\index\model\NvWxUser;
+use EasyWeChat\Kernel\Messages\Message;
 use think\Controller;
 use think\facade\Log;
 use think\facade\Session;
@@ -76,39 +77,40 @@ class Login extends Controller
     public function valid()
     {
         $app = app('wechat.official_account');
-//        $app->server->push(Mediamess)
-//        $app->server->push(function ($message) {
-//            switch ($message['MsgType']) {
-//                case 'event':
-//                    Log::write($message);
-//                    return '收到事件消息';
-//                    break;
-//                case 'text':
-//                    return '收到文字消息';
-//                    break;
-//                case 'image':
-//                    return '收到图片消息';
-//                    break;
-//                case 'voice':
-//                    return '收到语音消息';
-//                    break;
-//                case 'video':
-//                    return '收到视频消息';
-//                    break;
-//                case 'location':
-//                    return '收到坐标消息';
-//                    break;
-//                case 'link':
-//                    return '收到链接消息';
-//                    break;
-//                case 'file':
-//                    return '收到文件消息';
-//                // ... 其它消息
-//                default:
-//                    return '收到其它消息';
-//                    break;
-//            }
-//        });
+        Log::write("valid");
+//        $app->server->push(SubscribeMessageHandler::class, Message::EVENT);
+
+        $app->server->push(function ($message) {
+            switch ($message['MsgType']) {
+                case 'event':
+                    $this->handleSubscribe($message);
+                    break;
+                case 'text':
+                    return '收到文字消息';
+                    break;
+                case 'image':
+                    return '收到图片消息';
+                    break;
+                case 'voice':
+                    return '收到语音消息';
+                    break;
+                case 'video':
+                    return '收到视频消息';
+                    break;
+                case 'location':
+                    return '收到坐标消息';
+                    break;
+                case 'link':
+                    return '收到链接消息';
+                    break;
+                case 'file':
+                    return '收到文件消息';
+                // ... 其它消息
+                default:
+                    return '收到其它消息';
+                    break;
+            }
+        });
         $app->server->serve()->send();
     }
 
@@ -132,6 +134,49 @@ class Login extends Controller
             return true;
         }else {
             return false;
+        }
+    }
+
+    public function handleSubscribe($message)
+    {
+        $app = app('wechat.official_account');
+        Log::write($message);
+        $openid = $message['FromUserName'];
+        $event = $message['Event'];
+        $eventKey = $message['EventKey'];
+        Log::write("开始处理订阅消息： openid=".$openid ."; event=".$event);
+        if ('unsubscribe' == $event) {
+            Log::write("开始处理订阅消息： unsubscribe");
+            //取消订阅
+            $user = NvWxUser::get(['openid'=>$openid]);
+            if ($user) {
+                //更新
+                $user->subscribe=0;
+                $user->save();
+            }
+        } else if ('subscribe' == $event) {
+            Log::write("开始处理订阅消息： subscribe");
+            //订阅
+            $dbUser = NvWxUser::get(['openid'=>$openid]);
+//            Log::write("11111111111111111111111111");
+//            Log::write($dbUser);
+            if (!$dbUser) {
+//                Log::write("222222222222222222222222222");
+                $dbUser = new NvWxUser();
+                //为空的话，要插入
+                $user = $app->user->get($openid);
+                $user->qr_scene_str = $eventKey;
+//                Log::write('============================================');
+//                Log::write($user);
+//                Log::write('============================================');
+                $dbUser->save($user);
+            }else {
+                $dbUser->subscribe = 1;
+                $dbUser->qr_scene_str = $eventKey;
+                Log::write($dbUser);
+
+                $dbUser->save();
+            }
         }
     }
 

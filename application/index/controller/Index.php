@@ -4,10 +4,13 @@ namespace app\index\controller;
 
 use app\index\model\NvQrCode;
 use app\index\model\NvUser;
+use app\index\model\NvWxUser;
 use app\model\WxUser;
 use EasyWeChat\Factory;
 use think\Controller;
+use think\Db;
 use think\facade\Log;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 
 class Index  extends CheckLogin
@@ -18,11 +21,22 @@ class Index  extends CheckLogin
      */
     public function index()
     {
-        $startTime = request()->param('startTime');
-        $endTime = request()->param('endTime');
+        $startTime = strtotime(request()->param('startTime'));
+        $endTime = strtotime(request()->param('endTime'));
+        Log::write('--->'.$startTime.';'.$endTime);
 
-        $wxUser = WxUser::paginate(5, false, ['query' => request()->param()]);
-        $this->assign("wxUser", $wxUser);
+        if ($startTime && $endTime) {
+            Log::write('查询');
+            $wxUser = Db::table('nv_wx_user')
+                ->where('subscribe_time', ['>', $startTime], ['<', $endTime], 'and')
+                ->paginate(20, false, ['query' => request()->param()]);
+            $this->assign("wxUser", $wxUser);
+        }else {
+            $wxUser = WxUser::paginate(20, false, ['query' => request()->param()]);
+            $this->assign("wxUser", $wxUser);
+        }
+
+
         return $this->view->fetch();
     }
 
@@ -34,8 +48,12 @@ class Index  extends CheckLogin
     {
         $startTime = request()->param('startTime');
         $endTime = request()->param('endTime');
-
-        $wxUser = WxUser::paginate(10, false, ['query' => request()->param()]);
+        Log::write(request()->param());
+        $map['subscribe_time'] = array('between',$startTime.','.$endTime);
+        $data['subscribe_time'] = array(array('egt', $startTime),array('elt', $endTime), 'and') ;
+//        $map['subscribe_time'] = array(array('egt', $startTime), array('elt', $endTime));
+        $wxUser = WxUser::where('subscribe_time', '=', '1')->paginate(20, false);
+        //;paginate(20, false);
         $this->assign("wxUser", $wxUser);
         return $this->view->fetch('index');
     }
@@ -156,7 +174,7 @@ class Index  extends CheckLogin
     public function temporaryQrcode($name, $desc)
     {
         $app = app('wechat.official_account');
-        $ret = $app->qrcode->temporary('foo', 6 * 24 * 3600);
+        $ret = $app->qrcode->temporary($name, 6 * 24 * 3600);
         //保存到数据库
         $qrCode = new NvQrCode();
         $qrCode->ticket = $ret['ticket'];
@@ -176,14 +194,131 @@ class Index  extends CheckLogin
     public function foreverQrcode($channel = 'default')
     {
         $app = app('wechat.official_account');
-        $ret = $app->qrcode->temporary('1', 6 * 24 * 3600);
+        $ret = $app->qrcode->temporary($channel, 6 * 24 * 3600);
         dump($ret);
     }
 
     public function ip()
     {
-        $app = app('wechat.official_account');
-        dump($app->base->getValidIps());
+        $user = WxUser::get(1);
+        $user->id = 0;
+        for ($i = 0; $i < 50000; $i++) {
+            $user->id=0;
+            $user->isUpdate(false)->save();
+        }
+    }
+
+    //导出excel
+    public function outExcel()
+    {
+        $user = NvWxUser::all();
+        Log::write('======================================');
+        Log::write($user);
+        foreach ($user as $key=>$value) {
+            Log::write('key='.$key.';;;;'.$value);
+        }
+        $spreadsheet = new Spreadsheet();
+        //add title
+        $spreadsheet->setActiveSheetIndex(0)
+            ->setCellValue('A1', 'ID')
+            ->setCellValue('B1', '微信昵称')
+            ->setCellValue('C1', 'OPEN_ID')
+            ->setCellValue('D1', '是否关注')
+            ->setCellValue('E1', '性别')
+            ->setCellValue('F1', '国家')
+            ->setCellValue('G1', '省份')
+            ->setCellValue('H1', '城市')
+            ->setCellValue('I1', '关注时间')
+            ->setCellValue('J1', '渠道来源');
+
+        // Rename worksheet
+        $spreadsheet->getActiveSheet()->setTitle('关注用户');
+
+        $i = 2;
+        foreach ($user as $rs) {
+            // add data
+            // Add data
+            $spreadsheet->getActiveSheet()
+                ->setCellValue('A'.$i, $rs['id'])
+                ->setCellValue('B'.$i, $rs['nickname'])
+                ->setCellValue('C'.$i, $rs['openid'])
+                ->setCellValue('D'.$i, $rs['subscribe'] == 1 ? '是' : '否')
+                ->setCellValue('E'.$i, $rs['sex'] == 1 ? '男' : '女')
+                ->setCellValue('F'.$i, $rs['country'])
+                ->setCellValue('G'.$i, $rs['province'])
+                ->setCellValue('H'.$i, $rs['country'])
+                ->setCellValue('I'.$i, date('Y-m-d H:i:s',$rs['subscribe_time']))
+                ->setCellValue('J'.$i, $rs['qr_scene_str']);
+            $i++;
+        }
+
+        //Set width
+        $spreadsheet->getActiveSheet()
+            ->getColumnDimension('A')
+            ->setWidth(5);
+        $spreadsheet->getActiveSheet()
+            ->getColumnDimension('B')
+            ->setWidth(15);
+        $spreadsheet->getActiveSheet()
+            ->getColumnDimension('C')
+            ->setWidth(50);
+        $spreadsheet->getActiveSheet()
+            ->getColumnDimension('D')
+            ->setWidth(15);
+        $spreadsheet->getActiveSheet()
+            ->getColumnDimension('E')
+            ->setWidth(10);
+        $spreadsheet->getActiveSheet()
+            ->getColumnDimension('F')
+            ->setWidth(15);
+
+        $spreadsheet->getActiveSheet()
+            ->getColumnDimension('G')
+            ->setWidth(15);
+        $spreadsheet->getActiveSheet()
+            ->getColumnDimension('H')
+            ->setWidth(15);
+        $spreadsheet->getActiveSheet()
+            ->getColumnDimension('I')
+            ->setWidth(20);
+        $spreadsheet->getActiveSheet()
+            ->getColumnDimension('J')
+            ->setWidth(20);
+
+        // Set active sheet index to the first sheet, so Excel opens this as the first sheet
+        $spreadsheet->setActiveSheetIndex(0);
+        return $this->exportExcel($spreadsheet, 'xls', '关注用户');
+    }
+
+    /**
+     * 导出Excel
+     * @param  object $spreadsheet  数据
+     * @param  string $format       格式:excel2003 = xls, excel2007 = xlsx
+     *
+     * @param  string $savename     保存的文件名
+     * @return filedownload         浏览器下载
+     */
+    public function exportExcel($spreadsheet, $format = 'xls', $savename = 'export')
+    {
+        if (!$spreadsheet) return false;
+        if ($format == 'xls') {
+            //输出Excel03版本
+            header('Content-Type:application/vnd.ms-excel');
+            $class = "\PhpOffice\PhpSpreadsheet\Writer\Xls";
+        } elseif ($format == 'xlsx') {
+            //输出07Excel版本
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            $class = "\PhpOffice\PhpSpreadsheet\Writer\Xlsx";
+        }
+        //输出名称
+        header('Content-Disposition: attachment;filename="'.$savename.'.'.$format.'"');
+        //禁止缓存
+        header('Cache-Control: max-age=0');
+        $writer = new $class($spreadsheet);
+        $filePath = env('runtime_path')."temp/".time().microtime(true).".tmp";
+        $writer->save($filePath);
+        readfile($filePath);
+        unlink($filePath);
     }
 
 }

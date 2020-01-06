@@ -4,8 +4,9 @@
 namespace app\index\controller;
 
 use app\index\model\NvWxUser;
+use EasyWeChat\Kernel\Decorators\FinallyResult;
 use think\facade\Log;
-
+use \EasyWeChat\Kernel\Contracts\EventHandlerInterface;
 /**
  *
  * 'ToUserName' => 'gh_601343ea897e',
@@ -41,28 +42,33 @@ use think\facade\Log;
  *
  *
  */
-class SubscribeMessageHandler
+class SubscribeMessageHandler implements EventHandlerInterface
 {
-    //订阅事件
-    public function subscribeHandler($message)
+
+
+    public function handle($payload = null)
     {
+
         $app = app('wechat.official_account');
-        $user = $app->user->get($message['FromUserName']);
-        Log::write($user);
-        if ($message['MsgType'] == 'event' && $message['subscribe'])
-        {
-            $openId = $message['FromUserName'];
-
-            //订阅消息
-            $user = new NvWxUser();
-            $user->nickname($message['nickname']);
+        $openid = $app['request']->get('FromUserName');
+        $event = $app['request']->get('Event');
+        Log::write("开始处理订阅消息： openid=".$openid ."; event=".$event);
+        if ('unsubscribe' == $event) {
+            Log::write("开始处理订阅消息： unsubscribe");
+            //取消订阅
+            $user = NvWxUser::get(['openid'=>$openid]);
+            if ($user) {
+                //更新
+                $user->subscribe=0;
+                $user->save();
+            }
+        } else if ('subscribe' == $event) {
+            Log::write("开始处理订阅消息： subscribe");
+            //订阅
+            $user = NvWxUser::get(['openid'=>$openid]);
+            //更新
+            $user->subscribe=1;
+            Log::write($user);
         }
-
-    }
-
-    //取消订阅事件
-    public function unSubscribeHandler($message)
-    {
-
     }
 }

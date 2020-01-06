@@ -55,7 +55,7 @@
   <div class="lyear-login">
     <div class="login-center">
       <div class="login-header text-center">
-        <a href="../index/index.html"> <img alt="light year admin" src="images/logo-sidebar.png"> </a>
+<!--        <a href="../index/index.html"> <img alt="light year admin" src="images/logo-sidebar.png"> </a>-->
       </div>
       <form action="/index/login/login" method="post">
         <div class="form-group has-feedback feedback-left">
@@ -68,11 +68,14 @@
         </div>
         <div class="form-group has-feedback feedback-left row">
           <div class="col-xs-7">
-            <input type="text" name="captcha" class="form-control" placeholder="验证码">
+            <input type="text" name="captcha" id="captcha" class="form-control" placeholder="验证码">
             <span class="mdi mdi-check-all form-control-feedback" aria-hidden="true"></span>
           </div>
           <div class="col-xs-5">
-            <img src="images/captcha.png" class="pull-right" id="captcha" style="cursor: pointer;" onclick="this.src=this.src+'?d='+Math.random();" title="点击刷新" alt="captcha">
+<!--            <div class="pull-right" style="cursor: pointer;"><a href="">{:captcha_img()}</a></div>-->
+            <a href="/index/index/index">
+            <img src="{:captcha_src()}" class="pull-right" style="cursor: pointer;" title="点击刷新" alt="captcha">
+            </a>
           </div>
         </div>
         <div class="form-group">
@@ -91,36 +94,34 @@
 <script src="/static/js/bootstrap-notify.min.js"></script>
 <script type="text/javascript" src="/static/js/lightyear.js"></script>
 <script type="text/javascript" src="/static/js/main.min.js"></script>
-
-
-
-
-
+<script type="text/javascript" src="/static/js/spark-md5.min.js"></script>
 
 <script type="text/javascript">
-
 
   $('#example-login').on('click', function(){
     lightyear.loading('show');
     //获取参数
     var username = $("#username").val();
     var password = $("#password").val();
-    console.log("username="+username + ", password=" + password);
-    // 假设ajax提交操作
-    // setTimeout(function() {
-    //   lightyear.loading('hide');
-    //   lightyear.notify('服务器错误，请稍后再试~', 'danger', 100);
-    // }, 1e3)
+    var captcha = $("#captcha").val();
+    var hexHashPassword = SparkMD5.hash('password');
+    console.log('password='+hexHashPassword);
     $.ajax({
       url: '/index/login/login',
       type: 'POST',
       data: {
         "username": username,
-        "password": password
+        "password": hexHashPassword,
+        "captcha": captcha
       },
       success: function (result) {
+        console.log(result);
         lightyear.loading('hide');
-        window.location.href='/index/index/index';
+        if(result.code != -1) {
+            window.location.href='/index/index/index';
+        }else {
+          lightyear.notify(result.msg, 'danger', 100);
+        }
       },
       error: function (e) {
         lightyear.loading('hide');

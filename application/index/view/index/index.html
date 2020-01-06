@@ -3,11 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>文档列表 - 光年(Light Year Admin)后台管理系统模板</title>
-<link rel="icon" href="favicon.ico" type="image/ico">
-<meta name="keywords" content="LightYear,光年,后台模板,后台管理系统,光年HTML模板">
-<meta name="description" content="LightYear是一个基于Bootstrap v3.3.7的后台管理系统的HTML模板。">
-<meta name="author" content="yinqi">
+<title>nfun 后台系统-二维码</title>
+<link rel="icon" href="/static/favicon.ico" type="image/ico">
+<meta name="keywords" content="nfun 后台系统-二维码">
+<meta name="description" content="nfun 后台系统-二维码">
 <link href="/static/css/bootstrap.min.css" rel="stylesheet">
 <link href="/static/css/materialdesignicons.min.css" rel="stylesheet">
 <link href="/static/css/style.min.css" rel="stylesheet">
@@ -33,7 +32,7 @@
             <li class="nav-item nav-item-has-subnav active open">
               <a href="javascript:void(0)"><i class="mdi mdi-file-outline"></i> 用户</a>
               <ul class="nav nav-subnav">
-                <li class="active"> <a href="index1.html">用户数据</a> </li>
+                <li class="active"> <a href="index.html">用户数据</a> </li>
               </ul>
             </li>
 
@@ -64,11 +63,11 @@
           <ul class="topbar-right">
             <li class="dropdown dropdown-profile">
               <a href="javascript:void(0)" data-toggle="dropdown">
-                <img class="img-avatar img-avatar-48 m-r-10" src="/static/images/users/avatar.jpg" alt="笔下光年" />
-                <span>笔下光年 <span class="caret"></span></span>
+<!--                <img class="img-avatar img-avatar-48 m-r-10" src="/static/images/users/avatar.jpg" alt="" />-->
+                <span>{$loginUserName} <span class="caret"></span></span>
               </a>
               <ul class="dropdown-menu dropdown-menu-right">
-                <li> <a href="lyear_pages_edit_pwd.html"><i class="mdi mdi-lock-outline"></i> 修改密码</a> </li>
+<!--                <li> <a href="lyear_pages_edit_pwd.html"><i class="mdi mdi-lock-outline"></i> 修改密码</a> </li>-->
                 <li class="divider"></li>
                 <li> <a href="/index/login/logout"><i class="mdi mdi-logout-variant"></i> 退出登录</a> </li>
               </ul>
@@ -216,30 +215,82 @@
         <div class="row">
           <div class="col-lg-12">
             <div class="card">
-              <div class="card-toolbar clearfix">
+              <div class="">
                 <div class="toolbar-btn-action">
+
                   <div class="container-fluid">
+                    <!--在小屏幕中占3列-->
                     <div class="col-xs-3">
-                      <form id="from_download">
-                        <div class="col-xs-6">
-                          <input class="form-control" type="email" id="qr_numbers" name="qr_numbers" placeholder="输入二维码个数..">
-                        </div>
-                        <a class="btn btn-warning m-r-5" id="qr_download" ><i class="mdi mdi-download"></i> 二维码下载</a>
+
+                      <form id="from_download" class="form-inline col-xs-3">
+                          <div class="container">
+                              <div class="col-xs-1" style="margin-right: 10px;">
+                                  <div class="form-group" style="width: 100px;">
+                                      <input class="form-control form-group" style="width: 100px;"  type="email" id="qr_numbers" name="qr_numbers" placeholder="二维码个数..">
+                                  </div>
+                              </div>
+                              <div class="col-xs-1">
+                                  <div class="form-group">
+                                      <a class="btn btn-warning btn-w-md" id="qr_download" ><i class="mdi mdi-download"></i> 二维码下载</a>
+                                  </div>
+                              </div>
+                          </div>
                       </form>
+                    </div><!--在小屏幕中占3列-->
 
 
-                    </div>
+
+
+                      <!--在小屏幕中占4列-->
                     <div class="col-xs-4">
-                      <div class="input-daterange input-group">
-                        <input class="form-control js-datepicker" data-date-format="yyyy-mm-dd" type="text" id="example-daterange1" name="example-daterange1" placeholder="开始时间">
-                        <span class="input-group-addon"><i class="mdi mdi-chevron-right"></i></span>
-                        <input class="form-control js-datepicker" data-date-format="yyyy-mm-dd" type="text" id="example-daterange2" name="example-daterange2" placeholder="结束时间">
+                        <div class="">
+                            <form id="form_search" class="form-inline">
+                                <div class="container">
+                                    <div class="col-xs-4">
+                                        <div class="input-daterange input-group form-group">
+                                            <input class="form-control js-datepicker" data-date-format="yyyy-mm-dd" value="{$startTime|default=''}" type="text" id="example-daterange1" name="startTime" placeholder="开始时间">
+                                            <span class="input-group-addon"><i class="mdi mdi-chevron-right"></i></span>
+                                            <input class="form-control js-datepicker" data-date-format="yyyy-mm-dd" value="{$endTime|default=''}" type="text" id="example-daterange2" name="endTime" placeholder="结束时间">
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <div class="form-group">
+                                            <a class="btn btn-primary form-control" id="example-search"><i class="mdi mdi-search-web"></i> 查询数据</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form><!--在小屏幕中占4列-->
+                        </div>
+
+                    </div>
+
+                      <div class="">
+                          <form class="col-xs-3"></form>
                       </div>
-                    </div>
-                    <div class="col-xs-2">
-                      <a class="btn btn-primary m-r-5" id="example-search"><i class="mdi mdi-search-web"></i> 查询数据</a>
-                      <a class="btn btn-success m-r-5" href="#!"><i class="mdi mdi-export"></i> 导出数据</a>
-                    </div>
+
+                      <div class="col-xs-2">
+                          <div class="">
+                              <form id="11" class="form-inline">
+                                  <div class="">
+                                      <div class="">
+                                          <div class="">
+                                              <a class="btn btn-success" href="/index/index/outExcel"><i class="mdi mdi-export"></i> 导出数据</a>
+                                          </div>
+                                      </div>
+                                  </div>
+
+                              </form><!--在小屏幕中占4列-->
+                          </div>
+                      </div>
+
+
+<!--                    <div class="col-xs-1">-->
+<!--                        <a class="btn btn-success m-r-5" href="/index/index/outExcel"><i class="mdi mdi-export"></i> 导出数据</a>-->
+<!--                    </div>-->
+
+<!--                      <div class="col-xs-1">-->
+<!--&lt;!&ndash;                          <a class="btn btn-success m-r-5" href="/index/index/outExcel"><i class="mdi mdi-export"></i> 导出数据</a>&ndash;&gt;-->
+<!--                      </div>-->
                   </div>
 
 
@@ -250,19 +301,19 @@
                   <table class="table table-bordered">
                     <thead>
                       <tr>
-                        <th>
-                          <label class="lyear-checkbox checkbox-primary">
-                            <input type="checkbox" id="check-all"><span></span>
-                          </label>
-                        </th>
+<!--                        <th>-->
+<!--                          <label class="lyear-checkbox checkbox-primary">-->
+<!--&lt;!&ndash;                            <input type="checkbox" id="check-all"><span></span>&ndash;&gt;-->
+<!--                          </label>-->
+<!--                        </th>-->
                         <th>序号</th>
                         <th>用户是否关注</th>
                         <th>openid</th>
                         <th>用户的昵称</th>
                         <th>用户的性别</th>
-                        <th>用户所在城市</th>
                         <th>用户所在国家</th>
                         <th>用户所在省份</th>
+                        <th>用户所在城市</th>
                         <th>用户关注时间</th>
                         <th>用户关注的渠道来源</th>
                       </tr>
@@ -270,11 +321,11 @@
                     <tbody>
                       {volist name='wxUser' id='list'}
                       <tr>
-                        <td>
-                          <label class="lyear-checkbox checkbox-primary">
-                            <input type="checkbox" name="ids[]" value="1"><span></span>
-                          </label>
-                        </td>
+<!--                        <td>-->
+<!--                          <label class="lyear-checkbox checkbox-primary">-->
+<!--&lt;!&ndash;                            <input type="checkbox" name="ids[]" value="1"><span></span>&ndash;&gt;-->
+<!--                          </label>-->
+<!--                        </td>-->
                         <td>{$list.id}</td>
                         <td>
                           {if $list.subscribe == 1}
@@ -285,11 +336,20 @@
                         </td>
                         <td>{$list.openid}</td>
                         <td>{$list.nickname}</td>
-                        <td>{$list.sex}</td>
+                        <td>
+                          {if $list.sex == 1}
+                            <span class="text-center">男</span>
+                          {else/}
+                            <span class="text-center">女</span>
+                          {/if}
+                        </td>
+                        <td>{$list.country}</td>
                         <td>{$list.province}</td>
-                        <td>{$list.country}</td>
-                        <td>{$list.country}</td>
-                        <td><font class="text-success">{$list.subscribe_time}</font></td>
+                        <td>{$list.city}</td>
+                        <td><font class="text-success">
+                          {$list.subscribe_time|date="Y-m-d H:i:s"}
+                        </font>
+                        </td>
                         <td>
                           {$list.qr_scene_str}
                         </td>
@@ -299,22 +359,7 @@
                   </table>
                 </div>
                 {$wxUser|raw}
-<!--                <ul class="pagination">-->
-<!--                  <li class="disabled"><span>«</span></li>-->
-<!--                  <li class="active"><span>1</span></li>-->
-<!--                  <li><a href="#1">2</a></li>-->
-<!--                  <li><a href="#1">3</a></li>-->
-<!--                  <li><a href="#1">4</a></li>-->
-<!--                  <li><a href="#1">5</a></li>-->
-<!--                  <li><a href="#1">6</a></li>-->
-<!--                  <li><a href="#1">7</a></li>-->
-<!--                  <li><a href="#1">8</a></li>-->
-<!--                  <li class="disabled"><span>...</span></li>-->
-<!--                  <li><a href="#!">14452</a></li>-->
-<!--                  <li><a href="#!">14453</a></li>-->
-<!--                  <li><a href="#!">»</a></li>-->
-<!--                </ul>-->
-       
+
               </div>
             </div>
           </div>
@@ -361,6 +406,10 @@ $('#qr_download').on('click', function(){
     lightyear.notify('请输入二维码的数量', 'danger', 100);
     return;
   }
+  if (num > 50) {
+      lightyear.notify("一次性生成二维码数量大于50个， 请联系管理员！！");
+      return;
+  }
 
   $('#from_download').attr('action', '/index/index/downloadQr');
   $('#from_download').submit();
@@ -376,39 +425,16 @@ $('#qr_download').on('click', function(){
 $('#example-search').on('click', function(){
 
   //获取参数
-  var startTime = $("#example-daterange1").data("datetimepicker");
-  var endTime = $("#example-daterange2").data("datetimepicker");
-  if (startTime == '' || typeof(startTime) == 'undefined') {
-    lightyear.notify('请输入开始时间或者结束时间', 'danger', 100);
-    return;
-  }
-  if (endTime == '' || typeof(endTime) == 'undefined') {
-    lightyear.notify('请输入开始时间或者结束时间', 'danger', 100);
-    return;
-  }
-  lightyear.loading('show');
-  console.log("username="+startTime + ", password=" + endTime);
-  // 假设ajax提交操作
-  // setTimeout(function() {
-  //   lightyear.loading('hide');
-  //   lightyear.notify('服务器错误，请稍后再试~', 'danger', 100);
-  // }, 1e3)
-  $.ajax({
-    url: '/index/index/search',
-    type: 'POST',
-    data: {
-      "startTime": startTime,
-      "password": endTime
-    },
-    success: function (result) {
-      lightyear.loading('hide');
-    },
-    error: function (e) {
-      lightyear.loading('hide');
-      console.log(e)
-      lightyear.notify(e, 'danger', 100);
-    }
-  })
+  var startTime = $("#example-daterange1").val();
+  var endTime = $("#example-daterange2").val();
+
+    $('#form_search').attr('action', '/index/index/index');
+    $('#form_search').submit();
+
+    $("#example-daterange1").val(startTime);
+    $("#example-daterange2").val(endTime);
+
+
 });
 
 

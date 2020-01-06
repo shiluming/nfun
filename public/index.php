@@ -12,6 +12,12 @@
 // [ 应用入口文件 ]
 namespace think;
 
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
+
+
+
+
 // 加载基础文件
 require __DIR__ . '/../thinkphp/base.php';
 

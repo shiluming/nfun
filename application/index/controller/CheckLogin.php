@@ -20,7 +20,6 @@ class CheckLogin extends Controller
 
     protected function checkLogin()
     {
-        Log::write('check login');
         if (!Session::has('uid')) {
             $this->redirect(url('index/Login/index'),'', 0);
         }

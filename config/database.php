@@ -15,11 +15,11 @@ return [
     // 服务器地址
     'hostname'        => 'localhost',
     // 数据库名
-    'database'        => 'nfun',
+    'database'        => 'test',
     // 用户名
-    'username'        => 'nfun',
+    'username'        => 'root',
     // 密码
-    'password'        => 'B31XDvaX3T',
+    'password'        => '',
     // 端口
     'hostport'        => '',
     // 连接dsn

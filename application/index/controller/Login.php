@@ -227,8 +227,6 @@ public function testAdd()
 				
                 $dbUser->qr_scene_str = $qrStr;
                 $dbUser->city=$user['city'];
-//				Log::write("debug_text 4.1： ".$dbUser);
-//				Log::write("debug_text 4.2： ".$eventKey);
 
                 $dbUser->save();
             }

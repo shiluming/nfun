@@ -2,6 +2,7 @@
 namespace app\index\controller;
 
 
+use app\index\model\NvQrChannel;
 use app\index\model\NvQrCode;
 use app\index\model\NvUser;
 use app\index\model\NvWxUser;
@@ -24,36 +25,88 @@ class Index  extends CheckLogin
     {
         $startTime = strtotime(request()->param('startTime'));
         $endTime = strtotime(request()->param('endTime'));
+        $channel_str = request()->param('channel_value');
+        Log::write("channel_value=".$channel_str);
         $returnStartTime = '';
         $returnEndTime = '';
+        $returnChannel = '';
         $wxUser = new \stdClass();
-        if ($startTime && $endTime) {
-            $wxUser = Db::table('nv_wx_user')
-                ->where('subscribe_time', ['>', $startTime], ['<', $endTime], 'and')
-                ->paginate(20, false, ['query' => request()->param()]);
-            $returnEndTime = date('Y-m-d', $endTime);
+//        if ($startTime && $endTime) {
+//            $wxUser = Db::table('nv_wx_user')
+//                ->where('subscribe_time', ['>', $startTime], ['<', $endTime], 'and')
+//                ->paginate(20, false, ['query' => request()->param()]);
+//            $returnEndTime = date('Y-m-d', $endTime);
+//            $returnStartTime = date('Y-m-d', $startTime);
+//        } else if ($startTime) {
+//            $wxUser = Db::table('nv_wx_user')
+//                ->where('subscribe_time', '>', $startTime)
+//                ->paginate(20, false, ['query' => request()->param()]);
+//            $returnStartTime = date('Y-m-d', $startTime);
+//        } else if ($endTime) {
+//            $wxUser = Db::table('nv_wx_user')
+//                ->where('subscribe_time', '<', $endTime)
+//                ->paginate(20, false, ['query' => request()->param()]);
+//            $returnEndTime = date('Y-m-d', $endTime);
+//        }
+//        else {
+//            $wxUser = WxUser::paginate(20, false, ['query' => request()->param()]);
+//        }
+        //回显
+        if ($startTime) {
             $returnStartTime = date('Y-m-d', $startTime);
-        } else if ($startTime) {
-            $wxUser = Db::table('nv_wx_user')
-                ->where('subscribe_time', '>', $startTime)
-                ->paginate(20, false, ['query' => request()->param()]);
-            $returnStartTime = date('Y-m-d', $startTime);
-        } else if ($endTime) {
-            $wxUser = Db::table('nv_wx_user')
-                ->where('subscribe_time', '<', $endTime)
-                ->paginate(20, false, ['query' => request()->param()]);
+        }
+        if ($endTime) {
             $returnEndTime = date('Y-m-d', $endTime);
         }
-        else {
-            $wxUser = WxUser::paginate(20, false, ['query' => request()->param()]);
+        if ($channel_str) {
+            $returnChannel = $channel_str;
+            Log::write("returnChannel=".$channel_str);
         }
+
+        //闭包查询
+        $wxUser = Db::table('nv_wx_user')
+            ->where(function($query)use($startTime){
+                $search = isset($startTime)? $startTime : '';
+                if($search){
+                    $query->where('subscribe_time','>=', $search);
+                    $returnStartTime = date('Y-m-d', $startTime);
+                }
+            })
+            ->where(function($query)use($endTime){
+                $search = isset($endTime)? $endTime : '';
+                if($search){
+                    $query->where('subscribe_time','<=', $search);
+                    $returnEndTime = date('Y-m-d', $endTime);
+                }
+            })
+            ->where(function($query)use($channel_str){
+                $search = isset($channel_str)? $channel_str : '';
+                if($search && $search != '全部') {
+                    $query->where('qr_scene_str','=', $search);
+                }
+            })
+            ->paginate(20, false, ['query' => request()->param()]);
+
+        $channel_list = $this->getChannels();
+
         $this->assign([
             "wxUser"=>$wxUser,
             "loginUserName"=>Session::get('loginUserName'),
             'startTime'=>$returnStartTime,
-            'endTime'=>$returnEndTime
+            'endTime'=>$returnEndTime,
+            'returnChannel'=>$returnChannel,
+            'channel_list'=>$channel_list
         ]);
         return $this->view->fetch();
+    }
+
+    /**
+     * 查询渠道
+     * @return mixed
+     */
+    function getChannels()
+    {
+        return $list = NvQrChannel::all();
     }
 
     /**
@@ -120,7 +173,31 @@ class Index  extends CheckLogin
      * @return \think\response\Download
      * @author slm
      */
-    public function downloadQr($qr_numbers=5)
+    public function downloadQr($qr_channel)
+    {
+
+        $nvQrChannel = NvQrChannel::where('channel_name', $qr_channel)->find();
+        if (!$nvQrChannel) {
+            //为空，插入
+            $nvQrChannel = new NvQrChannel();
+            $nvQrChannel->channel_name=$qr_channel;
+            $nvQrChannel->save();
+        }
+        $filename = $qr_channel.'.jpg';
+        if (file_exists($filename)) {
+            return download($filename, $filename);
+        }
+
+        //不存在的情况
+
+
+        $nowTime = date('Y-m-d h-i-s');
+        $this->foreverQrcode($qr_channel, $nowTime.'-'.$filename);
+
+        return download($filename, $filename);
+    }
+
+    public function downloadQr_expired($qr_numbers=5)
     {
         $filename = "test.zip";
         $zip = new \ZipArchive();
